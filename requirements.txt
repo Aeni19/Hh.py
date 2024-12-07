@@ -1,4 +1,8 @@
-tkinter
-plyer
-datetime
-threading
+kivy.app 
+ kivy.uix.boxlayout 
+ kivy.uix.label 
+ kivy.uix.textinput 
+ kivy.uix.button 
+ plyer 
+ datetime 
+ 
