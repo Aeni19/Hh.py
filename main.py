@@ -1,62 +1,72 @@
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
+import tkinter as tk
+from tkinter import messagebox
 from plyer import notification
 from datetime import datetime, timedelta
 from threading import Timer
 
-class NotifyHubApp(App):
-    def build(self):
-        # Main layout
-        self.layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+class NotificationApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Notification App")
+        self.root.geometry("400x300")
 
-        # Title input
-        self.title_input = TextInput(hint_text='Enter notification title', multiline=False)
-        self.layout.add_widget(self.title_input)
+        # Title label and entry
+        self.title_label = tk.Label(root, text="Notification Title:")
+        self.title_label.pack(pady=5)
+        self.title_entry = tk.Entry(root, width=50)
+        self.title_entry.pack(pady=5)
 
-        # Message input
-        self.message_input = TextInput(hint_text='Enter notification message', multiline=False)
-        self.layout.add_widget(self.message_input)
+        # Message label and entry
+        self.message_label = tk.Label(root, text="Notification Message:")
+        self.message_label.pack(pady=5)
+        self.message_entry = tk.Entry(root, width=50)
+        self.message_entry.pack(pady=5)
 
-        # Time delay input (in seconds)
-        self.time_input = TextInput(hint_text='Enter delay in seconds', multiline=False, input_filter='int')
-        self.layout.add_widget(self.time_input)
+        # Time label and entry
+        self.time_label = tk.Label(root, text="Time (in seconds):")
+        self.time_label.pack(pady=5)
+        self.time_entry = tk.Entry(root, width=50)
+        self.time_entry.pack(pady=5)
 
         # Submit button
-        self.submit_button = Button(text='Set Notification', on_press=self.set_notification)
-        self.layout.add_widget(self.submit_button)
+        self.submit_button = tk.Button(root, text="Set Notification", command=self.set_notification)
+        self.submit_button.pack(pady=10)
 
-        # Status label
-        self.status_label = Label(text='')
-        self.layout.add_widget(self.status_label)
+        # Notifications list label
+        self.notifications_label = tk.Label(root, text="Scheduled Notifications:")
+        self.notifications_label.pack(pady=5)
 
-        return self.layout
+        # Notifications list box
+        self.notifications_listbox = tk.Listbox(root, width=50, height=10)
+        self.notifications_listbox.pack(pady=5)
 
-    def set_notification(self, instance):
+    def set_notification(self):
+        title = self.title_entry.get()
+        message = self.message_entry.get()
         try:
-            title = self.title_input.text
-            message = self.message_input.text
-            delay = int(self.time_input.text)
-
-            if not title or not message or delay <= 0:
-                self.status_label.text = 'All fields must be valid!'
-                return
-
-            # Schedule notification
-            self.status_label.text = f'Notification set for {delay} seconds from now.'
-            Timer(delay, self.send_notification, args=(title, message)).start()
+            delay = int(self.time_entry.get())
         except ValueError:
-            self.status_label.text = 'Invalid input for delay!'
+            messagebox.showerror("Invalid Input", "Time must be a number.")
+            return
+
+        if not title or not message or delay <= 0:
+            messagebox.showerror("Invalid Input", "All fields must be valid and time must be positive.")
+            return
+
+        notification_time = datetime.now() + timedelta(seconds=delay)
+        self.notifications_listbox.insert(tk.END, f"{notification_time.strftime('%H:%M:%S')} - {title}: {message}")
+
+        Timer(delay, self.send_notification, args=(title, message)).start()
+        messagebox.showinfo("Success", "Notification set successfully!")
 
     def send_notification(self, title, message):
         notification.notify(
             title=title,
             message=message,
-            app_name='NotifyHub'
+            app_name="Notification App"
         )
-        self.status_label.text = 'Notification sent!'
 
-if __name__ == '__main__':
-    NotifyHubApp().run()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = NotificationApp(root)
+    root.mainloop()
