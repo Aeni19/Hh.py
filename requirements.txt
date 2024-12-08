@@ -1,4 +1,0 @@
-tkinter
-plyer
-datetime
-threading
